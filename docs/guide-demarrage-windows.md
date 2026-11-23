@@ -1,17 +1,26 @@
 # Guide de démarrage Windows
 
-Chemins réels du projet. Java 21 n’est **pas** supposé être dans le PATH global.
+Chemins relatifs au dépôt. Java 21 n’est **pas** supposé être dans le PATH global.
 
 ## 1. Ouvrir PowerShell
 
 ```powershell
-cd C:\Users\Administrator\Desktop\microservices-project
+cd <racine-du-depot>   # dossier contenant pom.xml et scripts/
 ```
 
 ## 2. Charger l’environnement de session
 
 ```powershell
-. "C:\Users\Administrator\Desktop\microservices-project\scripts\init-env.ps1"
+# Option recommandée : définir JAVA_HOME / MAVEN_HOME si besoin, puis :
+. .\scripts\init-env.ps1
+```
+
+Exemple (session uniquement) :
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.13.10002-hotspot"
+$env:MAVEN_HOME = "C:\Path\To\apache-maven-3.9.6"
+. .\scripts\init-env.ps1
 ```
 
 Ce script fixe `JAVA_HOME` / `MAVEN_HOME` **uniquement pour la session courante**.
@@ -23,7 +32,7 @@ java -version
 mvn -version
 ```
 
-Attendu : Java 21, Maven 3.9.6.
+Attendu : Java 21, Maven 3.9.x.
 
 ## 4. Vérifier les ports libres
 
@@ -48,29 +57,29 @@ Dans **chaque** fenêtre : recharger `init-env.ps1`, puis :
 **Fenêtre 1 — Discovery**
 
 ```powershell
-. "C:\Users\Administrator\Desktop\microservices-project\scripts\init-env.ps1"
-java -jar "C:\Users\Administrator\Desktop\microservices-project\discovery-service\target\discovery-service-1.0.0-SNAPSHOT.jar"
+. .\scripts\init-env.ps1
+java -jar .\discovery-service\target\discovery-service-1.0.0-SNAPSHOT.jar
 ```
 
 **Fenêtre 2 — Customer** (après Eureka prêt)
 
 ```powershell
-. "C:\Users\Administrator\Desktop\microservices-project\scripts\init-env.ps1"
-java -jar "C:\Users\Administrator\Desktop\microservices-project\customer-service\target\customer-service-1.0.0-SNAPSHOT.jar"
+. .\scripts\init-env.ps1
+java -jar .\customer-service\target\customer-service-1.0.0-SNAPSHOT.jar
 ```
 
 **Fenêtre 3 — EBank**
 
 ```powershell
-. "C:\Users\Administrator\Desktop\microservices-project\scripts\init-env.ps1"
-java -jar "C:\Users\Administrator\Desktop\microservices-project\ebank-service\target\ebank-service-1.0.0-SNAPSHOT.jar"
+. .\scripts\init-env.ps1
+java -jar .\ebank-service\target\ebank-service-1.0.0-SNAPSHOT.jar
 ```
 
 **Fenêtre 4 — Gateway**
 
 ```powershell
-. "C:\Users\Administrator\Desktop\microservices-project\scripts\init-env.ps1"
-java -jar "C:\Users\Administrator\Desktop\microservices-project\gateway-service\target\gateway-service-1.0.0-SNAPSHOT.jar"
+. .\scripts\init-env.ps1
+java -jar .\gateway-service\target\gateway-service-1.0.0-SNAPSHOT.jar
 ```
 
 ## 10. Attendre Eureka UP
@@ -80,44 +89,23 @@ Navigateur : http://localhost:8761/
 Ou :
 
 ```powershell
-Invoke-RestMethod "http://localhost:8761/eureka/apps" -Headers @{Accept='application/json'}
+curl http://localhost:8761/eureka/apps
 ```
 
 Vérifier `CUSTOMER-SERVICE`, `EBANK-SERVICE`, `GATEWAY-SERVICE` en statut **UP**.
-Compter **10 à 60 secondes** après démarrage.
 
-Si Gateway renvoie 404 sur `/CUSTOMER-SERVICE/customers`, patienter quelques secondes (cache discovery locator) puis retester.
+## 11. Smoke HTTP
 
-## 11. Tester les endpoints
-
-```powershell
-Invoke-WebRequest http://localhost:8056/customers -UseBasicParsing
-Invoke-WebRequest http://localhost:9999/CUSTOMER-SERVICE/customers -UseBasicParsing
-Invoke-WebRequest http://localhost:8057/accounts -UseBasicParsing
-Invoke-WebRequest http://localhost:9999/EBANK-SERVICE/accounts -UseBasicParsing
+```text
+GET http://localhost:9999/CUSTOMER-SERVICE/customers
+GET http://localhost:9999/EBANK-SERVICE/accounts
 ```
 
-## 12. Swagger
+Swagger :
 
 - http://localhost:8056/swagger-ui/index.html
 - http://localhost:8057/swagger-ui/index.html
 
-## 13. Arrêt propre
+## 12. Arrêt
 
-Dans chaque fenêtre de service : `Ctrl+C`.
-
-Vérifier :
-
-```powershell
-netstat -ano | findstr ":8056 :8057 :8761 :9999" | findstr "LISTENING"
-```
-
-## Automatisation Phase 7 (optionnel)
-
-```powershell
-. .\scripts\init-env.ps1
-mvn clean verify
-powershell -ExecutionPolicy Bypass -File .\scripts\phase7\run-integration-tests.ps1
-```
-
-Le script démarre les jars, exécute les tests HTTP, puis n’arrête que les processus qu’il a créés.
+Arrêter chaque processus Java (Ctrl+C) dans l’ordre inverse : Gateway → EBank → Customer → Discovery.

@@ -3,7 +3,7 @@
 ## Exécution
 
 ```powershell
-. "C:\Users\Administrator\Desktop\microservices-project\scripts\init-env.ps1"
+. .\scripts\init-env.ps1
 # Après mvn clean verify :
 powershell -ExecutionPolicy Bypass -File .\scripts\phase7\run-integration-tests.ps1
 ```

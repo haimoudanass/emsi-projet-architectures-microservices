@@ -2,19 +2,42 @@
 # Scope: current PowerShell process (+ child processes) only.
 # Does NOT modify User/Machine environment variables, registry, or global PATH.
 #
-# Usage (dot-source — required so vars stay in the current session):
-#   . "C:\Users\Administrator\Desktop\microservices-project\scripts\init-env.ps1"
+# Usage (from repository root):
+#   . .\scripts\init-env.ps1
+#
+# Optional overrides (recommended on other machines):
+#   $env:JAVA_HOME = "C:\Path\To\jdk-21"
+#   $env:MAVEN_HOME = "C:\Path\To\apache-maven-3.9.6"
 
 $ErrorActionPreference = 'Stop'
-
-$JdkHome = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.13.10002-hotspot'
-$MavenHome = 'C:\Users\Administrator\Desktop\springboot-tools\apache-maven-3.9.6'
 
 function Test-RequiredPath {
     param([string]$Path, [string]$Label)
     if (-not (Test-Path -LiteralPath $Path)) {
         throw "Missing $Label : $Path"
     }
+}
+
+$JdkHome = $env:JAVA_HOME
+if (-not $JdkHome) {
+    $temurin = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.13.10002-hotspot'
+    if (Test-Path -LiteralPath (Join-Path $temurin 'bin\java.exe')) {
+        $JdkHome = $temurin
+    }
+}
+if (-not $JdkHome) {
+    throw 'JAVA_HOME is not set and no default JDK 21 Temurin install was found. Set $env:JAVA_HOME first.'
+}
+
+$MavenHome = $env:MAVEN_HOME
+if (-not $MavenHome) {
+    $mvnCmd = Get-Command mvn -ErrorAction SilentlyContinue
+    if ($mvnCmd -and $mvnCmd.Source) {
+        $MavenHome = Split-Path -Parent (Split-Path -Parent $mvnCmd.Source)
+    }
+}
+if (-not $MavenHome) {
+    throw 'MAVEN_HOME is not set and mvn was not found on PATH. Set $env:MAVEN_HOME first.'
 }
 
 Test-RequiredPath -Path (Join-Path $JdkHome 'bin\java.exe') -Label 'JDK 21 java.exe'

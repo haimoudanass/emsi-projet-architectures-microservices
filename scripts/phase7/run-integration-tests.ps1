@@ -8,10 +8,14 @@
   - No commit/push/deploy. Local only.
 #>
 param(
-    [string]$Root = "C:\Users\Administrator\Desktop\microservices-project",
+    [string]$Root,
     [switch]$SkipBuild,
     [switch]$SkipStart
 )
+
+if (-not $Root) {
+    $Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+}
 
 $ErrorActionPreference = 'Continue'
 $Phase7 = Join-Path $Root "logs\phase7"
