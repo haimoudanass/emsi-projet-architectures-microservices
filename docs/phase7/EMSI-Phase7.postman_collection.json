@@ -1,0 +1,63 @@
+{
+  "info": {
+    "name": "EMSI Microservices Phase 7",
+    "description": "Importable Postman collection for local E2E checks. Actual Phase 7 execution used PowerShell (scripts/phase7/run-integration-tests.ps1). Do not require Postman installation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Eureka Dashboard",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:8761/" }
+    },
+    {
+      "name": "02 Customer Direct",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:8056/customers" }
+    },
+    {
+      "name": "03 Customer Gateway",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:9999/CUSTOMER-SERVICE/customers" }
+    },
+    {
+      "name": "04 Customer Detail",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:9999/CUSTOMER-SERVICE/customers/1" }
+    },
+    {
+      "name": "05 EBank Direct",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:8057/accounts" }
+    },
+    {
+      "name": "06 EBank Gateway",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:9999/EBANK-SERVICE/accounts" }
+    },
+    {
+      "name": "08 POST Customer Gateway",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"name\":\"Phase7Demo\",\"email\":\"phase7demo@example.com\"}" },
+        "url": "http://localhost:9999/CUSTOMER-SERVICE/customers"
+      }
+    },
+    {
+      "name": "09 POST Account Gateway",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"balance\":7777.7,\"type\":\"SAVING_ACCOUNT\",\"customerId\":1}" },
+        "url": "http://localhost:9999/EBANK-SERVICE/accounts"
+      }
+    },
+    {
+      "name": "14 Unknown Service",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:9999/UNKNOWN-SERVICE/test" }
+    },
+    {
+      "name": "15 Static /accounts",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:9999/accounts" }
+    },
+    {
+      "name": "Actuator CircuitBreakers",
+      "request": { "method": "GET", "header": [], "url": "http://localhost:8057/actuator/circuitbreakers" }
+    }
+  ]
+}
